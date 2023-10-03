@@ -1,0 +1,23 @@
+openat(AT_FDCWD, "/sys/class/net/wlp2s0/statistics/rx_bytes", O_RDONLY) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0444, st_size=4096, ...}, AT_EMPTY_PATH) = 0
+read(3, "2250754\n", 4096)              = 8
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/class/net/wlp2s0/statistics/tx_bytes", O_RDONLY) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0444, st_size=4096, ...}, AT_EMPTY_PATH) = 0
+read(3, "194810\n", 4096)               = 7
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+clock_nanosleep(CLOCK_REALTIME, 0, {tv_sec=1, tv_nsec=0}, 0x7ffe1a33a080) = 0
+openat(AT_FDCWD, "/sys/class/net/wlp2s0/statistics/rx_bytes", O_RDONLY) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0444, st_size=4096, ...}, AT_EMPTY_PATH) = 0
+read(3, "2250796\n", 4096)              = 8
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+openat(AT_FDCWD, "/sys/class/net/wlp2s0/statistics/tx_bytes", O_RDONLY) = 3
+newfstatat(3, "", {st_mode=S_IFREG|0444, st_size=4096, ...}, AT_EMPTY_PATH) = 0
+read(3, "194872\n", 4096)               = 7
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+newfstatat(1, "", {st_mode=S_IFCHR|0620, st_rdev=makedev(0x88, 0), ...}, AT_EMPTY_PATH) = 0
+write(1, "\357\201\243 42 B/s  \357\201\242 62 B/s\n", 23) = 23
