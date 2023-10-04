@@ -151,27 +151,43 @@ int getFileContents(char* filepath, char* buf) {
 	return fd;
 }
 
-void _start() {
-	char contents[20];
-	getFileContents("/sys/class/net/wlp2s0/statistics/rx_bytes", contents);
-	int rx1 = atoi(contents);
-	getFileContents("/sys/class/net/wlp2s0/statistics/tx_bytes", contents);
-	int tx1 = atoi(contents);
-	sleep(1);
-	getFileContents("/sys/class/net/wlp2s0/statistics/rx_bytes", contents);
-	int rx2 = atoi(contents);
-	getFileContents("/sys/class/net/wlp2s0/statistics/tx_bytes", contents);
-	int tx2 = atoi(contents);
-	int r_rate = rx2-rx1; 
-	int t_rate = tx2-tx1; 
-	const char* r_fmt = r_rate<1024 ? " B/s" : " kB/s";
-	const char* t_fmt = t_rate<1024 ? " B/s" : " kB/s";
-	r_rate = r_rate<1024 ? r_rate : r_rate/1024;
-	t_rate = t_rate<1024 ? t_rate : t_rate/1024;
-	char output[100] = ""; char tmp[100];
-	itoa(r_rate, tmp, 10); strcat(output, "\u2193 "); strcat(output, tmp); strcat(output, r_fmt);
-	itoa(t_rate, tmp, 10); strcat(output, "  \u2191 ");strcat(output, tmp); strcat(output, t_fmt);
-	strcat(output, "\n");
+void usage(const char *self) {
+	char output[100] = "";
+	strcat(output, "usage: ");
+	strcat(output, self);
+	strcat(output, " [interface_name]\n");
 	print(output);
-	myexit(0);
+	myexit(1);
+}
+
+int main(int argc, char *argv[]) {
+	if (argc != 2 ) {
+		usage(argv[0]);
+	} else {
+		char rx_path[50]="/sys/class/net/", tx_path[50]="/sys/class/net/";
+		strcat(rx_path, argv[1]); strcat(rx_path, "/statistics/rx_bytes");
+		strcat(tx_path, argv[1]); strcat(tx_path, "/statistics/tx_bytes");
+		char contents[20];
+		getFileContents("/sys/class/net/wlp2s0/statistics/rx_bytes", contents);
+		int rx1 = atoi(contents);
+		getFileContents("/sys/class/net/wlp2s0/statistics/tx_bytes", contents);
+		int tx1 = atoi(contents);
+		sleep(1);
+		getFileContents("/sys/class/net/wlp2s0/statistics/rx_bytes", contents);
+		int rx2 = atoi(contents);
+		getFileContents("/sys/class/net/wlp2s0/statistics/tx_bytes", contents);
+		int tx2 = atoi(contents);
+		int r_rate = rx2-rx1; 
+		int t_rate = tx2-tx1; 
+		const char* r_fmt = r_rate<1024 ? " B/s" : " kB/s";
+		const char* t_fmt = t_rate<1024 ? " B/s" : " kB/s";
+		r_rate = r_rate<1024 ? r_rate : r_rate/1024;
+		t_rate = t_rate<1024 ? t_rate : t_rate/1024;
+		char output[100] = ""; char tmp[100];
+		itoa(r_rate, tmp, 10); strcat(output, "\u2193 "); strcat(output, tmp); strcat(output, r_fmt);
+		itoa(t_rate, tmp, 10); strcat(output, "  \u2191 ");strcat(output, tmp); strcat(output, t_fmt);
+		strcat(output, "\n");
+		print(output);	
+	}
+	return 0;
 }
