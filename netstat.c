@@ -12,11 +12,11 @@
 
 void* memcpy (void *dest, const void *src, size_t len)
 {
-  char *d = dest;
-  const char *s = src;
-  while (len--)
-    *d++ = *s++;
-  return dest;
+	char *d = dest;
+	const char *s = src;
+	while (len--)
+	*d++ = *s++;
+	return dest;
 }
 void* mempcpy (void *dst, const void *src, size_t len) { return (char *) memcpy (dst, src, len) + len; }
 
@@ -26,11 +26,17 @@ size_t strlen(const char *s) {
 	return p-s;
 }
 
-char* stpcpy(char *restrict dst, const char *restrict src) { char  *p;  p = mempcpy(dst, src, strlen(src)); *p = '\0';return p; }
+char* stpcpy(char *restrict dst, const char *restrict src) { 
+	char  *p;  
+	p = mempcpy(dst, src, strlen(src)); 
+	*p = '\0';
+	return p; 
+}
 char* strcpy(char *restrict dst, const char *restrict src) { stpcpy(dst, src); return dst; }
 char* strcat(char *restrict dst, const char *restrict src) { stpcpy(dst + strlen(dst), src); return dst;}
 
 void* syscall5(void* syscall_number, void* arg1, void* arg2, void* arg3, void* arg4, void* arg5);
+
 void myexit(int status) {
 	syscall5(
 		(void*) 60, //SYS_exit
@@ -59,6 +65,9 @@ ssize_t write(int fd, const void* buf, size_t count) {
 	);
 }
 
+#define print(s) write(1, s, strlen(s))
+#define println(s) do { print(s); write(1, "\n", 1);} while(0)
+
 int close(int fd) {
 	return (ssize_t) syscall5(
 		(void*) 3, //SYS_close
@@ -77,8 +86,12 @@ int clock_nanosleep(clockid_t clockid, int flags, const struct timespec *request
 		0
 	);
 }
-unsigned int sleep(unsigned int seconds) {
-	struct timespec ts = {seconds, 0};
+
+unsigned int sleep(float seconds) {
+	unsigned int sec=0, nsec=0;
+	if(seconds < 1 && seconds > 0) nsec = seconds * 1000000000;
+	else sec = seconds;
+	struct timespec ts = {sec, nsec};
 	return clock_nanosleep(CLOCK_REALTIME, 0, &ts, &ts);	
 }
 
@@ -113,10 +126,6 @@ int atoi(const char* str) {
 		result *= 10; result += (int)((*p)-'0'); 
 	}
 	return result;
-}
-
-ssize_t print(const char* s) {
-	return write(1, s, strlen(s));
 }
 
 int openat(int dirfd, const char *pathname, int flags) {
@@ -168,21 +177,30 @@ int main(int argc, char *argv[]) {
 		strcat(rx_path, argv[1]); strcat(rx_path, "/statistics/rx_bytes");
 		strcat(tx_path, argv[1]); strcat(tx_path, "/statistics/tx_bytes");
 		char contents[20];
-		getFileContents("/sys/class/net/wlp2s0/statistics/rx_bytes", contents);
-		int rx1 = atoi(contents);
-		getFileContents("/sys/class/net/wlp2s0/statistics/tx_bytes", contents);
-		int tx1 = atoi(contents);
-		sleep(1);
-		getFileContents("/sys/class/net/wlp2s0/statistics/rx_bytes", contents);
-		int rx2 = atoi(contents);
-		getFileContents("/sys/class/net/wlp2s0/statistics/tx_bytes", contents);
-		int tx2 = atoi(contents);
-		int r_rate = rx2-rx1; 
-		int t_rate = tx2-tx1; 
-		const char* r_fmt = r_rate<1024 ? " B/s" : " kB/s";
-		const char* t_fmt = t_rate<1024 ? " B/s" : " kB/s";
-		r_rate = r_rate<1024 ? r_rate : r_rate/1024;
-		t_rate = t_rate<1024 ? t_rate : t_rate/1024;
+		// get rx_bytes & tx_bytes from /sys/class/net/[interface_name]/statistics/
+		getFileContents(rx_path, contents); int rx1 = atoi(contents);
+		getFileContents(tx_path, contents); int tx1 = atoi(contents);
+		
+		//sleep for 0.2 seconds
+		sleep(0.2);
+
+		// get rx_bytes & tx_bytes again
+		getFileContents(rx_path, contents); int rx2 = atoi(contents);
+		getFileContents(tx_path, contents); int tx2 = atoi(contents);
+
+		// calculate the speed
+		int r_rate = (rx2-rx1)*5; 
+		int t_rate = (tx2-tx1)*5;
+
+		char r_fmt[10] = "", t_fmt[10] = "";
+		if (r_rate > 1024*1024) { r_rate /= 1024*1024; strcat(r_fmt, " MB/s"); } 
+		else if (r_rate > 1024) { r_rate /= 1024; strcat(r_fmt, " kB/s"); }
+		else { strcat(r_fmt, " B/s"); }
+		
+		if (t_rate > 1024*1024) { t_rate /= 1024*1024; strcat(t_fmt, " MB/s"); } 
+		else if (t_rate > 1024) { t_rate /= 1024; strcat(t_fmt, " kB/s"); }
+		else { strcat(t_fmt, " B/s"); }
+		
 		char output[100] = ""; char tmp[100];
 		itoa(r_rate, tmp, 10); strcat(output, "\u2193 "); strcat(output, tmp); strcat(output, r_fmt);
 		itoa(t_rate, tmp, 10); strcat(output, "  \u2191 ");strcat(output, tmp); strcat(output, t_fmt);
