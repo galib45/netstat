@@ -3,3 +3,7 @@
 	git clone https://github.com/galib45/netstat
 	cd netstat
 	./build.sh
+
+## Usage
+
+	./netstat [interface_name]

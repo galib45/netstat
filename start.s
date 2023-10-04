@@ -1,4 +1,4 @@
-.intel_syntax noprefix
+\.intel_syntax noprefix
 .section .note.GNU-stack,"",@progbits
 
 .text  
@@ -16,9 +16,9 @@
 
 	.global _start
 	_start:
-	  xor rbp,rbp
-	  xor r9,r9
-	  pop rdi     /* argc */
-	  mov rsi,rsp /* argv */
-	  call main
-	  call myexit
+		xor rbp,rbp
+		xor r9,r9
+		pop rdi     /* argc */
+		mov rsi,rsp /* argv */
+		call main
+		call myexit
